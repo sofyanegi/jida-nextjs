@@ -5,7 +5,7 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 export default function Home() {
   return (
     <>
-      <main className="flex flex-col items-center justify-center min-h-screen bg-gray-50 text-center p-4">
+      <main className="flex flex-col items-center justify-center min-h-screen text-center p-4">
         <Avatar className="w-28 h-28 mb-4 border-2 border-gray-200">
           <AvatarImage src="https://github.com/sofyanegi.png" alt="Sofyan Egi Lesmana" />
           <AvatarFallback>SEL</AvatarFallback>

@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { NavigationMenu, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, navigationMenuTriggerStyle } from '@/components/ui/navigation-menu';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
+import { ModeToggle } from './dark-toggle';
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -25,6 +26,7 @@ export default function Navbar() {
                 </NavigationMenuLink>
               </NavigationMenuItem>
             ))}
+            <ModeToggle />
           </NavigationMenuList>
         </NavigationMenu>
       </div>
