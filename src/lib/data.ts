@@ -31,3 +31,37 @@ export let posts: Post[] = [
     date: '2024-05-20',
   },
 ];
+
+export function getPosts(): Post[] {
+  return posts;
+}
+
+export function getPostBySlug(slug: string): Post | undefined {
+  return posts.find((post) => post.slug === slug);
+}
+
+export function createPost(post: Post): Post {
+  posts.push(post);
+  return post;
+}
+
+export function updatePost(slug: string, updatedPost: Post): Post | undefined {
+  const index = posts.findIndex((post) => post.slug === slug);
+
+  if (index !== -1) {
+    posts[index] = { ...posts[index], ...updatedPost };
+    return posts[index];
+  }
+
+  return undefined;
+}
+
+export function deletePost(slug: string): boolean {
+  const index = posts.findIndex((post) => post.slug === slug);
+
+  if (index !== -1) {
+    posts.splice(index, 1);
+    return true;
+  }
+  return false;
+}

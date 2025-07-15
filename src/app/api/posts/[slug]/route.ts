@@ -1,11 +1,11 @@
-import { posts } from '@/lib/data';
+import { deletePost, getPostBySlug, updatePost } from '@/lib/data';
+import { Post } from '@/lib/definitions';
 import { NextRequest, NextResponse } from 'next/server';
 import slugify from 'slugify';
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
   const slug = (await params).slug;
-  const post = posts.find((post) => post.slug == slug);
-
+  const post = getPostBySlug(slug);
   if (!post) return NextResponse.json({ status: 404, message: 'Not Found' }, { status: 404 });
 
   return NextResponse.json({ status: 200, message: 'success get detail post', data: post });
@@ -13,14 +13,8 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ slug
 
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
   const slug = (await params).slug;
-
-  const index = posts.findIndex((post) => post.slug === slug);
-  if (index === -1) return NextResponse.json({ status: 404, message: 'Not Found' }, { status: 404 });
-
   const body = await req.json();
-
-  posts[index] = {
-    ...posts[index],
+  const updatedData: Post = {
     ...body,
     slug: slugify(body.title, {
       lower: true,
@@ -28,15 +22,18 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ slug
     }),
   };
 
-  return NextResponse.json({ status: 200, message: 'success', data: body });
+  const result = updatePost(slug, updatedData);
+
+  if (!result) return NextResponse.json({ status: 404, message: 'Not Found' }, { status: 404 });
+
+  return NextResponse.json({ status: 200, message: 'success', data: result });
 }
 
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
   const slug = (await params).slug;
+  const result = deletePost(slug);
 
-  const index = posts.findIndex((post) => post.slug === slug);
-  if (index === -1) return NextResponse.json({ status: 404, message: 'Not Found' }, { status: 404 });
+  if (!result) return NextResponse.json({ status: 404, message: 'Not Found' }, { status: 404 });
 
-  posts.splice(index, 1);
   return NextResponse.json({ status: 200, message: 'success delete post' });
 }

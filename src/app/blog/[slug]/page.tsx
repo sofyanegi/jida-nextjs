@@ -26,7 +26,7 @@ export default async function Page({ params }: BlogPostPageProps) {
   const { slug } = await params;
   const post = await fetchPost(slug);
 
-  if (!post) notFound();
+  if (!post) return notFound();
 
   return (
     <div className="container mx-auto p-8 flex justify-center">
