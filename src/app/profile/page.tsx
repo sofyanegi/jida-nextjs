@@ -1,6 +1,9 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Github, Linkedin, Mail } from 'lucide-react';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = { title: 'Profile' };
 
 export default function Page() {
   const coreSkills = ['React.js', 'JavaScript', 'TypeScript', 'Node.js', 'GoLang', 'Laravel', 'Tailwind CSS', 'RESTful APIs', 'AWS', 'GCP', 'MySQL', 'PostgreSQL'];

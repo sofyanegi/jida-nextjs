@@ -1,7 +1,10 @@
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Code, Layers, Rocket } from 'lucide-react';
+import { Metadata } from 'next';
 
-export default function AboutPage() {
+export const metadata: Metadata = { title: 'About' };
+
+export default function Page() {
   const techStack = [
     { name: 'Next.js', description: 'Framework React untuk production dengan App Router.' },
     { name: 'React', description: 'Library JavaScript untuk membangun antarmuka pengguna.' },
