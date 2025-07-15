@@ -1,31 +1,30 @@
-import { posts } from '@/lib/data';
+import DeleteButton from '@/components/delete-button';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft } from 'lucide-react';
+import { BASE_API_URL } from '@/lib/definitions';
+import { ArrowLeft, PenBoxIcon } from 'lucide-react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
-type BlogPostPageProps = { params: { slug: string } };
+type BlogPostPageProps = { params: Promise<{ slug: string }> };
 
-export function generateMetadata({ params }: BlogPostPageProps): Metadata {
-  const post = posts.find((p) => p.slug === params.slug);
+const fetchPost = async (slug: string) => {
+  const res = await fetch(`${BASE_API_URL}/posts/${slug}`).then((res) => res.json());
+  const { data } = res;
+  return data;
+};
 
-  if (!post) {
-    return { title: 'Postingan tidak ditemukan' };
-  }
-
+export async function generateMetadata({ params }: BlogPostPageProps): Promise<Metadata> {
+  const { slug } = await params;
+  const post = await fetchPost(slug);
+  if (!post) return { title: 'Postingan tidak ditemukan' };
   return { title: post.title, description: post.description };
 }
 
-export function generateStaticParams() {
-  return posts.map((post) => ({
-    slug: post.slug,
-  }));
-}
-
-export default function Page({ params }: BlogPostPageProps) {
-  const post = posts.find((p) => p.slug === params.slug);
+export default async function Page({ params }: BlogPostPageProps) {
+  const { slug } = await params;
+  const post = await fetchPost(slug);
 
   if (!post) notFound();
 
@@ -42,6 +41,14 @@ export default function Page({ params }: BlogPostPageProps) {
               day: 'numeric',
             })}
           </p>
+          <div className="flex items-center gap-2">
+            <DeleteButton params={post.slug} url="/api/posts" succesMessage="Success delete Post" />
+            <Link href={`/blog/${post.slug}/edit`}>
+              <Button variant="secondary" size="icon">
+                <PenBoxIcon />
+              </Button>
+            </Link>
+          </div>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="space-y-4 text-muted-foreground leading-relaxed">
