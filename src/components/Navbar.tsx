@@ -19,13 +19,16 @@ export default function Navbar() {
       <div className="container h-14 flex items-center justify-center mx-auto">
         <NavigationMenu>
           <NavigationMenuList>
-            {links.map((link) => (
-              <NavigationMenuItem key={link.name}>
-                <NavigationMenuLink className={cn(navigationMenuTriggerStyle(), pathname === link.route ? 'bg-accent text-accent-foreground' : 'bg-transparent')} asChild>
-                  <Link href={link.route}>{link.name}</Link>
-                </NavigationMenuLink>
-              </NavigationMenuItem>
-            ))}
+            {links.map((link) => {
+              const isActive = link.route === '/' ? pathname === link.route : pathname.startsWith(link.route);
+              return (
+                <NavigationMenuItem key={link.name}>
+                  <NavigationMenuLink className={cn(navigationMenuTriggerStyle(), isActive ? 'bg-accent text-accent-foreground' : 'bg-transparent')} asChild>
+                    <Link href={link.route}>{link.name}</Link>
+                  </NavigationMenuLink>
+                </NavigationMenuItem>
+              );
+            })}
             <ModeToggle />
           </NavigationMenuList>
         </NavigationMenu>
