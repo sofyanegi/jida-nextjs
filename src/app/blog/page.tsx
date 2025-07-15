@@ -8,10 +8,15 @@ import { Metadata } from 'next';
 import { BASE_API_URL } from '@/lib/definitions';
 
 export const metadata: Metadata = { title: 'Blog' };
-export default async function Page() {
-  const res = await fetch(`${BASE_API_URL}/posts`, { cache: 'no-store' }).then((res) => res.json());
-  const posts: Post[] = res.data;
 
+const fetchPosts = async () => {
+  const res = await fetch(`${BASE_API_URL}/posts`, { cache: 'no-store' }).then((res) => res.json());
+  const { data } = res;
+  return data;
+};
+
+export default async function Page() {
+  const posts: Post[] = await fetchPosts();
   if (!posts) return null;
 
   return (
