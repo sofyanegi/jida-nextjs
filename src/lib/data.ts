@@ -1,6 +1,7 @@
 import { Post } from './definitions';
 
-export const posts: Post[] = [
+// eslint-disable-next-line prefer-const
+export let posts: Post[] = [
   {
     id: '1',
     slug: 'belajar-nextjs-app-router',
