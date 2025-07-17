@@ -18,18 +18,15 @@ export default function Page({ params }: EditPostPageProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    if (slug) {
-      fetch(`${BASE_API_URL}/posts/${slug}`)
-        .then((res) => res.json())
-        .then((data) => {
-          setPost(data.data);
-          setIsLoading(false);
-        })
-        .catch((error) => {
-          console.error('Failed to fetch post:', error);
-          setIsLoading(false);
-        });
-    }
+    const fetchPost = async (slug: string) => {
+      const res = await fetch(`${BASE_API_URL}/posts/${slug}`, { cache: 'no-store' });
+      if (!res.ok) return undefined;
+      const { data } = await res.json();
+      setPost(data);
+      setIsLoading(false);
+    };
+
+    fetchPost(slug);
   }, [slug]);
 
   async function onSubmit(values: PostFormValues) {
@@ -55,7 +52,7 @@ export default function Page({ params }: EditPostPageProps) {
   }
 
   if (isLoading) return <Loading />;
-  if (!post) return notFound();
+  if (!post) notFound();
 
   return (
     <div className="container mx-auto p-8 max-w-xl">
