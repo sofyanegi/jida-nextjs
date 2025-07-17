@@ -1,25 +1,20 @@
-import { createPost, getPosts } from '@/lib/data';
-import { Post } from '@/lib/definitions';
 import { NextRequest, NextResponse } from 'next/server';
-import slugify from 'slugify';
+import { NewPost } from '@/lib/definitions';
+import prisma from '@/lib/prisma';
+import { generateUniqueSlug } from '@/lib/utils';
 
 export async function GET(): Promise<NextResponse> {
-  const posts = getPosts();
+  const posts = await prisma.post.findMany({ orderBy: { createdAt: 'desc' } });
   return NextResponse.json({ status: 200, message: 'success get all posts', data: posts });
 }
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
-  const body = await req.json();
-
-  const newPost: Post = {
-    id: (Math.random() * 1000000).toString(),
-    slug: slugify(body.title, { lower: true, strict: true }),
-    title: body.title,
-    description: body.description,
-    date: new Date().toISOString(),
-  };
-
-  createPost(newPost);
-
-  return NextResponse.json({ status: 201, message: 'success add new post', data: body }, { status: 201 });
+  const { title, description } = await req.json();
+  const newPost: NewPost = { title: title, description: description, slug: generateUniqueSlug(title) };
+  try {
+    const result = await prisma.post.create({ data: newPost });
+    return NextResponse.json({ status: 201, message: 'success add new post', data: result }, { status: 201 });
+  } catch (error) {
+    return NextResponse.json({ status: 500, error: error, message: 'Internal Server Error' }, { status: 500 });
+  }
 }

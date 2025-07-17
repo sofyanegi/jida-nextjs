@@ -1,39 +1,37 @@
-import { deletePost, getPostBySlug, updatePost } from '@/lib/data';
-import { Post } from '@/lib/definitions';
 import { NextRequest, NextResponse } from 'next/server';
-import slugify from 'slugify';
+import { UpdatePost } from '@/lib/definitions';
+import prisma from '@/lib/prisma';
+import { generateUniqueSlug } from '@/lib/utils';
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
   const slug = (await params).slug;
-  const post = getPostBySlug(slug);
-  if (!post) return NextResponse.json({ status: 404, message: 'Not Found' }, { status: 404 });
-
-  return NextResponse.json({ status: 200, message: 'success get detail post', data: post });
+  try {
+    const post = await prisma.post.findUnique({ where: { slug: slug } });
+    if (!post) return NextResponse.json({ status: 404, message: 'Post not found' }, { status: 404 });
+    return NextResponse.json({ status: 200, message: 'success get detail post', data: post });
+  } catch (error) {
+    return NextResponse.json({ status: 500, message: 'Internal Server Error', error: error }, { status: 500 });
+  }
 }
 
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
   const slug = (await params).slug;
-  const body = await req.json();
-  const updatedData: Post = {
-    ...body,
-    slug: slugify(body.title, {
-      lower: true,
-      strict: true,
-    }),
-  };
-
-  const result = updatePost(slug, updatedData);
-
-  if (!result) return NextResponse.json({ status: 404, message: 'Not Found' }, { status: 404 });
-
-  return NextResponse.json({ status: 200, message: 'success', data: result });
+  const { title, description } = await req.json();
+  const updatedData: UpdatePost = { title, description, slug: generateUniqueSlug(title) };
+  try {
+    await prisma.post.update({ where: { slug: slug }, data: updatedData });
+    return NextResponse.json({ status: 200, message: 'success update post' });
+  } catch (error) {
+    return NextResponse.json({ status: 500, message: 'Internal Server Error', error: error }, { status: 500 });
+  }
 }
 
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
   const slug = (await params).slug;
-  const result = deletePost(slug);
-
-  if (!result) return NextResponse.json({ status: 404, message: 'Not Found' }, { status: 404 });
-
-  return NextResponse.json({ status: 200, message: 'success delete post' });
+  try {
+    await prisma.post.delete({ where: { slug: slug } });
+    return NextResponse.json({ status: 200, message: 'success delete post' });
+  } catch (error) {
+    return NextResponse.json({ status: 500, message: 'Internal Server Error', error: error }, { status: 500 });
+  }
 }
