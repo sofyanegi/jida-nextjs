@@ -16,7 +16,7 @@ export default function Page() {
       const response = await fetch(`${BASE_API_URL}/posts`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...values, date: new Date().toISOString() }),
+        body: JSON.stringify({ ...values }),
       });
 
       if (!response.ok) throw new Error('Failed to create post');
