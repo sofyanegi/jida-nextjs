@@ -1,47 +1,39 @@
 'use client';
 
-import { PostForm, PostFormValues } from '@/components/post-form';
-import { Post } from '@/lib/definitions';
-import { notFound, useRouter } from 'next/navigation';
 import { use, useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
+
+import { PostForm, PostFormValues } from '@/components/post-form';
 import Loading from '../loading';
-import { BASE_API_URL } from '@/lib/definitions';
+import { useAppDispatch } from '@/lib/hooks';
+import { clearSelectedPost, fetchPostBySlug, updatePost } from '@/lib/features/slice/postsSlice';
+import { useSelectedPostState } from '@/lib/features/slice/usePostsHooks';
 
 type EditPostPageProps = { params: Promise<{ slug: string }> };
 
 export default function Page({ params }: EditPostPageProps) {
   const router = useRouter();
   const { slug } = use(params);
-  const [post, setPost] = useState<Post | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const dispatch = useAppDispatch();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const { selectedPost: post, selectedStatus: status } = useSelectedPostState();
+
   useEffect(() => {
-    const fetchPost = async (slug: string) => {
-      const res = await fetch(`${BASE_API_URL}/posts/${slug}`, { cache: 'no-store' });
-      if (!res.ok) return undefined;
-      const { data } = await res.json();
-      setPost(data);
-      setIsLoading(false);
+    dispatch(fetchPostBySlug(slug));
+
+    return () => {
+      dispatch(clearSelectedPost());
     };
+  }, [dispatch, slug]);
 
-    fetchPost(slug);
-  }, [slug]);
-
-  async function onSubmit(values: PostFormValues) {
+  const onSubmit = async (values: PostFormValues) => {
     setIsSubmitting(true);
     try {
-      const response = await fetch(`${BASE_API_URL}/posts/${slug}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(values),
-      });
-
-      if (!response.ok) throw new Error('Failed to update post');
-
-      toast.success('Post updated successfully!');
-      router.push(`/blog`);
+      const updated = await dispatch(updatePost({ slug, values })).unwrap();
+      toast.success('Post updated successfully.');
+      router.push(`/blog/${updated.slug}`);
       router.refresh();
     } catch (error) {
       console.error('Error updating post:', error);
@@ -49,15 +41,14 @@ export default function Page({ params }: EditPostPageProps) {
     } finally {
       setIsSubmitting(false);
     }
-  }
+  };
 
-  if (isLoading) return <Loading />;
-  if (!post) notFound();
+  if (status === 'loading' || status === 'idle') return <Loading />;
 
   return (
     <div className="container mx-auto p-8 max-w-xl">
       <h1 className="text-4xl font-bold tracking-tight mb-8">Edit Post</h1>
-      <PostForm onSubmit={onSubmit} initialData={post} buttonText="Update Post" isSubmitting={isSubmitting} />
+      {post && <PostForm onSubmit={onSubmit} initialData={post} buttonText="Update Post" isSubmitting={isSubmitting} />}
     </div>
   );
 }

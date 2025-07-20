@@ -1,29 +1,24 @@
 'use client';
 
 import { PostForm, PostFormValues } from '@/components/post-form';
-import { BASE_API_URL } from '@/lib/definitions';
+import { addNewPost } from '@/lib/features/slice/postsSlice';
+import { useAppDispatch } from '@/lib/hooks';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
 export default function Page() {
   const router = useRouter();
+  const dispatch = useAppDispatch();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   async function onSubmit(values: PostFormValues) {
     setIsSubmitting(true);
     try {
-      const response = await fetch(`${BASE_API_URL}/posts`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...values }),
-      });
-
-      if (!response.ok) throw new Error('Failed to create post');
-
-      toast.success('Post created successfully!');
+      await dispatch(addNewPost(values));
       router.push('/blog');
       router.refresh();
+      toast.success('Post created successfully!');
     } catch (error) {
       console.error('Error creating post:', error);
       toast.error('Failed to create post. Please try again.');

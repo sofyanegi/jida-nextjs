@@ -4,26 +4,31 @@ import { TrashIcon } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
-export default function DeleteButton(props: { params: string; url: string; succesMessage: string }) {
-  const { params, url, succesMessage } = props;
+type DeleteButtonProps = {
+  onConfirm: () => Promise<unknown>;
+  succesMessage: string;
+  redirect: string;
+};
+
+export default function DeleteButton({ onConfirm, succesMessage, redirect }: DeleteButtonProps) {
+  const [isDeleting, setIsDeleting] = useState(false);
   const router = useRouter();
 
-  const onDelete = async (params: string, url: string, succesMessage: string) => {
+  const handleDelete = async () => {
+    setIsDeleting(true);
     try {
-      const response = await fetch(`${url}/${params}`, { method: 'DELETE' });
-
-      if (!response.ok) throw new Error('Failed to delete data');
-
+      await onConfirm();
       toast.success(succesMessage);
-      router.back();
-      setTimeout(() => {
-        window.location.reload();
-      }, 100);
+      router.push(redirect);
+      router.refresh();
     } catch (error) {
       console.error('Error deleting data:', error);
-      toast.error('Failed to delete data.');
+      toast.error('Gagal menghapus data.');
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -41,7 +46,9 @@ export default function DeleteButton(props: { params: string; url: string; succe
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction onClick={() => onDelete(params, url, succesMessage)}>Continue</AlertDialogAction>
+          <AlertDialogAction onClick={handleDelete} disabled={isDeleting}>
+            {isDeleting ? 'Deleting...' : 'Continue'}
+          </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
