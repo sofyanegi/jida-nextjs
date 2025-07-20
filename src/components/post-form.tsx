@@ -8,6 +8,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Post } from '@/lib/definitions';
+import { useRouter } from 'next/navigation';
 
 const formSchema = z.object({
   title: z.string().min(2, {
@@ -28,6 +29,7 @@ interface PostFormProps {
 }
 
 export function PostForm({ onSubmit, initialData, buttonText = 'Submit', isSubmitting = false }: PostFormProps) {
+  const router = useRouter();
   const form: UseFormReturn<PostFormValues> = useForm<PostFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -72,10 +74,12 @@ export function PostForm({ onSubmit, initialData, buttonText = 'Submit', isSubmi
 
         {initialData && (
           <Button
+            type="button"
             variant="outline"
             className="ml-2"
             onClick={() => {
               form.reset();
+              router.back();
             }}
           >
             Cancel
