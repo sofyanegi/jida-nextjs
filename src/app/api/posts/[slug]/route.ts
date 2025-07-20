@@ -20,7 +20,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ slug
   const updatedData: UpdatePost = { title, description, slug: generateUniqueSlug(title) };
   try {
     await prisma.post.update({ where: { slug: slug }, data: updatedData });
-    return NextResponse.json({ status: 200, message: 'success update post' });
+    return NextResponse.json({ status: 200, message: 'success update post', data: updatedData });
   } catch (error) {
     return NextResponse.json({ status: 500, message: 'Internal Server Error', error: error }, { status: 500 });
   }
