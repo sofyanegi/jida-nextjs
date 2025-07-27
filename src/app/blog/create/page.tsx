@@ -3,6 +3,7 @@
 import { PostForm, PostFormValues } from '@/components/post-form';
 import { addNewPost } from '@/lib/features/slice/postsSlice';
 import { useAppDispatch } from '@/lib/hooks';
+import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { toast } from 'sonner';
@@ -11,11 +12,13 @@ export default function Page() {
   const router = useRouter();
   const dispatch = useAppDispatch();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { data: session } = useSession();
+  const authorId: string = (session?.user as { id: string })?.id;
 
   async function onSubmit(values: PostFormValues) {
     setIsSubmitting(true);
     try {
-      await dispatch(addNewPost(values));
+      await dispatch(addNewPost({ ...values, authorId }));
       router.push('/blog');
       router.refresh();
       toast.success('Post created successfully!');

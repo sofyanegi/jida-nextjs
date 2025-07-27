@@ -38,8 +38,8 @@ export const addNewPost = createAsyncThunk('posts/addNewPost', async (values: Om
   await dispatch(fetchPosts());
 });
 
-export const updatePost = createAsyncThunk('posts/updatePost', async ({ slug, values }: { slug: string; values: Omit<UpdatePost, 'slug'> }, { dispatch }) => {
-  const response = await axiosInstance.put(`${POSTS_URL}/${slug}`, values);
+export const updatePost = createAsyncThunk('posts/updatePost', async (values: UpdatePost, { dispatch }) => {
+  const response = await axiosInstance.put(`${POSTS_URL}/${values.slug}`, values);
   await dispatch(fetchPosts());
   return response.data;
 });

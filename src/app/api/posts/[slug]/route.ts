@@ -15,14 +15,46 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ slug
 }
 
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
-  const slug = (await params).slug;
-  const { title, description } = await req.json();
-  const updatedData: UpdatePost = { title, description, slug: generateUniqueSlug(title) };
+  const { slug } = await params;
+  const { title, description, authorId } = await req.json();
+
   try {
-    await prisma.post.update({ where: { slug: slug }, data: updatedData });
-    return NextResponse.json({ status: 200, message: 'success update post', data: updatedData });
+    const existingPost = await prisma.post.findUnique({ where: { slug } });
+
+    if (!existingPost) {
+      return NextResponse.json({ status: 404, message: 'Post not found' }, { status: 404 });
+    }
+
+    if (existingPost.authorId !== authorId) {
+      return NextResponse.json({ status: 403, message: 'You are not authorized to edit this post' }, { status: 403 });
+    }
+
+    const updatedData: UpdatePost = {
+      title,
+      description,
+      slug: generateUniqueSlug(title),
+      authorId,
+    };
+
+    const updatedPost = await prisma.post.update({
+      where: { slug },
+      data: updatedData,
+    });
+
+    return NextResponse.json({
+      status: 200,
+      message: 'Post updated successfully',
+      data: updatedPost,
+    });
   } catch (error) {
-    return NextResponse.json({ status: 500, message: 'Internal Server Error', error: error }, { status: 500 });
+    return NextResponse.json(
+      {
+        status: 500,
+        message: 'Internal Server Error',
+        error: (error as Error).message,
+      },
+      { status: 500 }
+    );
   }
 }
 

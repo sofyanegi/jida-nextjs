@@ -9,8 +9,8 @@ export async function GET(): Promise<NextResponse> {
 }
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
-  const { title, description } = await req.json();
-  const newPost: NewPost = { title: title, description: description, slug: generateUniqueSlug(title) };
+  const { title, description, authorId } = await req.json();
+  const newPost: NewPost = { title: title, description: description, slug: generateUniqueSlug(title), authorId: authorId };
   try {
     const result = await prisma.post.create({ data: newPost });
     return NextResponse.json({ status: 201, message: 'success add new post', data: result }, { status: 201 });
